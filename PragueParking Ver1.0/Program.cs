@@ -14,9 +14,9 @@ namespace PragueParking_Ver1._0
 
         }
 
-        void AddVehicle()
+        void AddVehicle(int i)
         {
-
+            
         }
 
         void RemoveVehicle()
