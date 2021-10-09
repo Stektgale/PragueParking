@@ -9,10 +9,10 @@ namespace PragueParking_Ver1._0
         static void Main(string[] args)
         {
             Console.WriteLine("Welcome to the super useful and not at all broken parking garage software.");
-            ProcessInput();
+            MainMenu();
         }
 
-        static void ProcessInput()
+        static void MainMenu()
         {
             Console.Write("Input a command: ");
             string input = Console.ReadLine();
@@ -48,7 +48,7 @@ namespace PragueParking_Ver1._0
 
                 default:
                     Console.WriteLine("The input Was not a valid command. Input help for a help list.");
-                    ProcessInput();
+                    MainMenu();
                     break;
             }
         }
@@ -62,8 +62,17 @@ namespace PragueParking_Ver1._0
             int j = VehicleCheck(i);
             if (j == 0)
             {
-                Console.Write("Enter vehicle type. car or mc:");
-                temporary[0] = Console.ReadLine().ToUpper();
+                do
+                {
+                    Console.Write("Enter vehicle type. car or mc:");
+                    temporary[0] = Console.ReadLine().ToUpper();
+                    if (temporary[0] == "MC" || temporary[0] == "CAR")
+                    {
+                        continue;
+                    }
+                    Console.WriteLine("Invalid vehicle type. Try again.");
+                }
+                while ((temporary[0] != "MC") && (temporary[0] != "CAR"));
 
                 Console.Write("Enter Vehicle Registration number:");
                 temporary[1] = Console.ReadLine().ToUpper();
@@ -108,14 +117,56 @@ namespace PragueParking_Ver1._0
                 Console.WriteLine("The Parking Space is occupied by two motorcycles. Please try something else.");
             }
 
-            ProcessInput();
+            MainMenu();
         }
 
         static void RemoveVehicle()
         {
             Console.Write("Select parking spot from 1-100: ");
             int i = int.Parse(Console.ReadLine());
-            parkingGarage[i - 1].Remove(i - 1, 1);
+            int j = VehicleCheck(i);
+            switch (j)
+            {
+                case -1:
+                    string[] spotSplit = new string[2];
+                    spotSplit = parkingGarage[i - 1].Split('#');
+                    Console.WriteLine("Removed {0} {1} from spot {2}", spotSplit[0], spotSplit[1], i);
+                    parkingGarage[i - 1] = null;
+                    break;
+
+                case 0:
+                    Console.WriteLine("The Spot doesn't contain any vehicles.");
+                    break;
+
+                case 1:
+                    spotSplit = new string[2];
+                    spotSplit = parkingGarage[i - 1].Split('#');
+                    Console.WriteLine("Removed {0} {1} from spot {2}", spotSplit[0], spotSplit[1], i);
+                    parkingGarage[i - 1] = null;
+                    break;
+
+                case 2:
+                    string[] mcSplit = new string[2];
+                    spotSplit = new string[4];
+                    spotSplit = parkingGarage[i - 1].Split('|', '#');
+                    mcSplit = parkingGarage[i - 1].Split('|');
+                    Console.Write("Two motorcycles {0} {1} and {2} {3} were found on this spot. Which one do you want to remove? (1/2): ",
+                        spotSplit[0], spotSplit[1], spotSplit[2], spotSplit[3]);
+                    int n = int.Parse(Console.ReadLine());
+                    if (n == 1)
+                    {
+                        Console.WriteLine("Removed {0} {1} from spot {2}", spotSplit[0], spotSplit[1], i);
+                        mcSplit[0] = null;
+                    }
+                    else if (n == 2)
+                    {
+                        Console.WriteLine("Removed {0} {1} from spot {2}", spotSplit[2], spotSplit[3], i);
+                        mcSplit[1] = null;
+                    }
+                    parkingGarage[i - 1] = string.Join('|', mcSplit);
+                    break;
+            }
+            MainMenu();
         }
 
         static void MoveVehicle()
@@ -126,7 +177,7 @@ namespace PragueParking_Ver1._0
             int j = int.Parse(Console.ReadLine());
             string tempString = parkingGarage[j - 1];
             (parkingGarage[j - 1], parkingGarage[i - 1]) = (parkingGarage[i - 1], parkingGarage[j - 1]);
-            ProcessInput();
+            MainMenu();
         }
 
         static void SearchForVehicle()
@@ -145,7 +196,7 @@ namespace PragueParking_Ver1._0
             {
                 Console.WriteLine("Parking {0}: {1}", i + 1, parkingGarage[i]);
             }
-            ProcessInput();
+            MainMenu();
         }
 
         static void Exit()
@@ -153,6 +204,11 @@ namespace PragueParking_Ver1._0
 
         }
 
+        /// <summary>
+        /// Returns a number: -1 occupied by car, 0 free spot, 1 occupied by one mc, 2 occupied by two mcs
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         static int VehicleCheck(int index)
         {
             int i = 0;
