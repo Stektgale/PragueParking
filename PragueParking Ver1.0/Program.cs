@@ -8,9 +8,7 @@ namespace PragueParking_Ver1._0
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Welcome to the super useful and not at all broken parking garage software.");
-            parkingGarage[0] = "MC#2|MC#1";
-            parkingGarage[1] = "MC#4|MC#3";
+            Console.WriteLine("Welcome to Gale Parking v1.0.");
             MainMenu();
         }
 
@@ -33,7 +31,17 @@ namespace PragueParking_Ver1._0
                     break;
 
                 case "SEARCH":
-                    SearchForVehicle();
+                    Console.WriteLine("Input registration number.");
+                    int i = SearchForVehicle(Console.ReadLine());
+                    if (i == -1)
+                    {
+                        Console.WriteLine("Could not find the vehicle you are looking for. Try using SHOWALL instead.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Vehicle found on spot: {0}", i);
+                    }
+                    MainMenu();
                     break;
 
                 case "HELP":
@@ -394,14 +402,40 @@ namespace PragueParking_Ver1._0
             MainMenu();
         }
 
-        static void SearchForVehicle()
+        static int SearchForVehicle(string s)
         {
+            for (int i = 1; i < 100; i++)
+            {
+                string[] split = new string[4];
 
+                if (parkingGarage[i - 1] != null)
+                {
+                    split = parkingGarage[i - 1].Split('#', '|');
+                }
+
+                foreach (string item in split)
+                {
+                    if (item == s.ToUpper())
+                    {
+                        return i;
+                    }
+                    continue;
+                }
+            }
+            return -1;
         }
 
         static void Help()
         {
-
+            Console.WriteLine("\nHelplist:");
+            Console.WriteLine("\nADD: Add vehicles in to the program." +
+                "\nREMOVE: Remove vehicles from the system." +
+                "\nMOVE: Move vehicles between parking spots. Can even switch two vehicles parking spots." +
+                "\nSEARCH: Search after a licenseplate and find the parking spot of the vehicle." +
+                "\nSHOWALL: Displays a list of all parking spots and tha vehicles parked there." +
+                "\nEXIT: Can be used to close program." +
+                "\nHELP: Bring back this list");
+            MainMenu();
         }
 
         static void ShowAll()
