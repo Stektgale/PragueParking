@@ -9,6 +9,8 @@ namespace PragueParking_Ver1._0
         static void Main(string[] args)
         {
             Console.WriteLine("Welcome to the super useful and not at all broken parking garage software.");
+            parkingGarage[0] = "MC#2|MC#1";
+            parkingGarage[1] = "MC#4|MC#3";
             MainMenu();
         }
 
@@ -87,7 +89,7 @@ namespace PragueParking_Ver1._0
             }
             else if (j == 1)
             {
-                Console.WriteLine("The parkingspace is occupied by one mc. Do you want to add another one? (Y/N)");
+                Console.Write("The parkingspace is occupied by one mc. Do you want to add another one? (Y/N): ");
                 string s = Console.ReadLine().ToUpper();
                 switch (s)
                 {
@@ -116,7 +118,6 @@ namespace PragueParking_Ver1._0
             {
                 Console.WriteLine("The Parking Space is occupied by two motorcycles. Please try something else.");
             }
-
             MainMenu();
         }
 
@@ -157,13 +158,15 @@ namespace PragueParking_Ver1._0
                     {
                         Console.WriteLine("Removed {0} {1} from spot {2}", spotSplit[0], spotSplit[1], i);
                         mcSplit[0] = null;
+                        parkingGarage[i - 1] = mcSplit[1];
                     }
                     else if (n == 2)
                     {
                         Console.WriteLine("Removed {0} {1} from spot {2}", spotSplit[2], spotSplit[3], i);
                         mcSplit[1] = null;
+                        parkingGarage[i - 1] = mcSplit[0];
                     }
-                    parkingGarage[i - 1] = string.Join('|', mcSplit);
+                    else { Console.WriteLine("Failed to remove vehicle due to invalid input!"); }
                     break;
             }
             MainMenu();
@@ -171,12 +174,223 @@ namespace PragueParking_Ver1._0
 
         static void MoveVehicle()
         {
+            string[] spotSplit = new string[2];
+            int secondSpot = 0;
             Console.Write("Select parking spot from 1-100 to move: ");
-            int i = int.Parse(Console.ReadLine());
-            Console.Write("Select parking spot from 1-100 to move current vehicle to: ");
-            int j = int.Parse(Console.ReadLine());
-            string tempString = parkingGarage[j - 1];
-            (parkingGarage[j - 1], parkingGarage[i - 1]) = (parkingGarage[i - 1], parkingGarage[j - 1]);
+            int firstSpot = int.Parse(Console.ReadLine());
+            int vehicleValue = VehicleCheck(firstSpot);
+            switch (vehicleValue)
+            {
+                case -1:
+                    spotSplit = parkingGarage[firstSpot - 1].Split('#');
+                    Console.WriteLine("You have selected {0} {1} to move now.", spotSplit[0], spotSplit[1]);
+                    Console.Write("Select parking spot from 1-100 to move current vehicle to: ");
+                    secondSpot = int.Parse(Console.ReadLine());
+                    (parkingGarage[secondSpot - 1], parkingGarage[firstSpot - 1]) = (parkingGarage[firstSpot - 1], parkingGarage[secondSpot - 1]);
+                    Console.WriteLine("Moved vehicle to new spot. If there were any vehicles on that spot then they have switched places.");
+                    break;
+
+                case 0:
+                    Console.WriteLine("The parking spot is empty. Try something else.");
+                    break;
+
+                case 1:
+                    spotSplit = parkingGarage[firstSpot - 1].Split('#');
+                    Console.WriteLine("You have selected {0} {1} to move.", spotSplit[0], spotSplit[1]);
+                    Console.Write("Now select parking spot from 1-100 to move current vehicle to: ");
+                    secondSpot = int.Parse(Console.ReadLine());
+                    int secondVehicleValue = VehicleCheck(secondSpot);
+                    switch (secondVehicleValue)
+                    {
+                        case 0:
+                            (parkingGarage[secondSpot - 1], parkingGarage[firstSpot - 1]) = (parkingGarage[firstSpot - 1], parkingGarage[secondSpot - 1]);
+                            Console.WriteLine("Moved vehicle to new spot.");
+                            break;
+
+                        case 2:
+                            string[] secondSpotSplit = new string[4];
+                            spotSplit = new string[2];
+                            spotSplit = parkingGarage[firstSpot - 1].Split('#');
+                            secondSpotSplit = parkingGarage[secondSpot - 1].Split('#', '|');
+                            Console.Write("Two vehicles {0} {1} and {2} {3} found on that spot. Which one do you want to switch places with.(1/2): ",
+                                secondSpotSplit[0], secondSpotSplit[1], secondSpotSplit[2], secondSpotSplit[3]);
+                            string s = Console.ReadLine();
+                            if (s == "1")
+                            {
+                                (spotSplit[0], spotSplit[1], secondSpotSplit[0], secondSpotSplit[1]) = (secondSpotSplit[0], secondSpotSplit[1], spotSplit[0], spotSplit[1]);
+                                string[] secondSpotStitch = new string[2];
+                                parkingGarage[firstSpot - 1] = string.Join('#', spotSplit);
+                                secondSpotStitch[0] = string.Join('#', secondSpotSplit[0], secondSpotSplit[1]);
+                                secondSpotStitch[1] = string.Join('#', secondSpotSplit[2], secondSpotSplit[3]);
+                                parkingGarage[secondSpot - 1] = string.Join('|', secondSpotStitch);
+                                Console.WriteLine("Swapped vehicles.");
+                            }
+                            else if (s == "2")
+                            {
+                                (spotSplit[0], spotSplit[1], secondSpotSplit[2], secondSpotSplit[3]) = (secondSpotSplit[2], secondSpotSplit[3], spotSplit[0], spotSplit[1]);
+                                string[] secondSpotStitch = new string[2];
+                                parkingGarage[firstSpot - 1] = string.Join('#', spotSplit);
+                                secondSpotStitch[0] = string.Join('#', secondSpotSplit[0], secondSpotSplit[1]);
+                                secondSpotStitch[1] = string.Join('#', secondSpotSplit[2], secondSpotSplit[3]);
+                                parkingGarage[secondSpot - 1] = string.Join('|', secondSpotStitch);
+                                Console.WriteLine("Swapped vehicles.");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Invalid input. Try something else.");
+                            }
+
+                            break;
+
+                        default:
+                            (parkingGarage[secondSpot - 1], parkingGarage[firstSpot - 1]) = (parkingGarage[firstSpot - 1], parkingGarage[secondSpot - 1]);
+                            Console.WriteLine("Switched spots between the vehicles.");
+                            break;
+                    }
+                    break;
+
+                case 2:
+                    spotSplit = new string[4];
+                    spotSplit = parkingGarage[firstSpot - 1].Split('#', '|');
+                    Console.Write("There are two vehicles {0} {1} and {2} {3} on this spot. Chose one to move.(1/2):",
+                        spotSplit[0], spotSplit[1], spotSplit[2], spotSplit[3]);
+                    string input = Console.ReadLine();
+                    if (input == "1")
+                    {
+                        Console.WriteLine("You have selected {0} {1} to move.", spotSplit[0], spotSplit[1]);
+                        Console.Write("Now select parking spot from 1-100 to move current vehicle to: ");
+                        secondSpot = int.Parse(Console.ReadLine());
+                        vehicleValue = VehicleCheck(secondSpot);
+                        switch (vehicleValue)
+                        {
+                            case -1:
+                                Console.WriteLine("Action failed. A car won't fit on the current parking spot.");
+                                break;
+
+                            case 0:
+                                parkingGarage[secondSpot - 1] = string.Join('#', spotSplit[0], spotSplit[1]);
+                                parkingGarage[firstSpot - 1] = string.Join('#', spotSplit[2], spotSplit[3]);
+                                spotSplit[0] = null;
+                                spotSplit[1] = null;
+                                Console.WriteLine("Moved vehicle to new Spot.");
+                                break;
+
+                            case 1:
+                                spotSplit = new string[2];
+                                spotSplit = parkingGarage[firstSpot - 1].Split('|');
+                                (spotSplit[0], parkingGarage[secondSpot - 1]) = (parkingGarage[secondSpot - 1], spotSplit[0]);
+                                parkingGarage[firstSpot - 1] = string.Join('|', spotSplit);
+                                Console.WriteLine("Vehicles switched spots");
+                                break;
+
+                            case 2:
+                                string[] secondSpotSplit = new string[4];
+                                string[] secondSpotStitch = new string[2];
+                                string[] spotStitch = new string[2];
+                                spotSplit = new string[4];
+                                spotSplit = parkingGarage[firstSpot - 1].Split('#', '|');
+                                secondSpotSplit = parkingGarage[secondSpot - 1].Split('#', '|');
+                                Console.WriteLine("Two vehicles {0} {1} and {2} {3} found on that spot. Which one do you want to switch places with.(1/2): ",
+                                    secondSpotSplit[0], secondSpotSplit[1], secondSpotSplit[2], secondSpotSplit[3]);
+                                string s = Console.ReadLine();
+                                if (s == "1")
+                                {
+                                    (spotSplit[0], spotSplit[1], secondSpotSplit[0], secondSpotSplit[1]) = (secondSpotSplit[0], secondSpotSplit[1], spotSplit[0], spotSplit[1]);
+                                    spotStitch[0] = string.Join('#', spotSplit[0], spotSplit[1]);
+                                    spotStitch[1] = string.Join('#', spotSplit[2], spotSplit[3]);
+                                    secondSpotStitch[0] = string.Join('#', secondSpotSplit[0], secondSpotSplit[1]);
+                                    secondSpotStitch[1] = string.Join('#', secondSpotSplit[2], secondSpotSplit[3]);
+                                    parkingGarage[firstSpot - 1] = string.Join('|', spotStitch);
+                                    parkingGarage[secondSpot - 1] = string.Join('|', secondSpotStitch);
+                                    Console.WriteLine("Vehicles switched spots.");
+                                }
+                                else if (s == "2")
+                                {
+                                    (spotSplit[0], spotSplit[1], secondSpotSplit[2], secondSpotSplit[3]) = (secondSpotSplit[2], secondSpotSplit[3], spotSplit[0], spotSplit[1]);
+                                    spotStitch[0] = string.Join('#', spotSplit[0], spotSplit[1]);
+                                    spotStitch[1] = string.Join('#', spotSplit[2], spotSplit[3]);
+                                    secondSpotStitch[0] = string.Join('#', secondSpotSplit[0], secondSpotSplit[1]);
+                                    secondSpotStitch[1] = string.Join('#', secondSpotSplit[2], secondSpotSplit[3]);
+                                    parkingGarage[firstSpot - 1] = string.Join('|', spotStitch);
+                                    parkingGarage[secondSpot - 1] = string.Join('|', secondSpotStitch);
+                                    Console.WriteLine("Vehicles switched spots.");
+                                }
+                                break;
+                        }
+                    }
+                    else if (input == "2")
+                    {
+                        Console.WriteLine("You have selected {0} {1} to move.", spotSplit[2], spotSplit[3]);
+                        Console.Write("Now select parking spot from 1-100 to move current vehicle to: ");
+                        secondSpot = int.Parse(Console.ReadLine());
+                        vehicleValue = VehicleCheck(secondSpot);
+                        switch (vehicleValue)
+                        {
+                            case -1:
+                                Console.WriteLine("Action failed. A car won't fit on the current parking spot.");
+                                break;
+
+                            case 0:
+                                parkingGarage[secondSpot - 1] = string.Join('#', spotSplit[2], spotSplit[3]);
+                                parkingGarage[firstSpot - 1] = string.Join('#', spotSplit[0], spotSplit[1]);
+                                spotSplit[2] = null;
+                                spotSplit[3] = null;
+                                Console.WriteLine("Moved vehicle to new Spot.");
+                                break;
+
+                            case 1:
+                                spotSplit = new string[2];
+                                spotSplit = parkingGarage[firstSpot - 1].Split('|');
+                                (spotSplit[1], parkingGarage[secondSpot - 1]) = (parkingGarage[secondSpot - 1], spotSplit[1]);
+                                parkingGarage[firstSpot - 1] = string.Join('|', spotSplit);
+                                Console.WriteLine("Vehicles switched spots");
+                                break;
+
+                            case 2:
+                                string[] secondSpotSplit = new string[4];
+                                string[] secondSpotStitch = new string[2];
+                                string[] spotStitch = new string[2];
+                                spotSplit = new string[4];
+                                spotSplit = parkingGarage[firstSpot - 1].Split('#', '|');
+                                secondSpotSplit = parkingGarage[secondSpot - 1].Split('#', '|');
+                                Console.WriteLine("Two vehicles {0} {1} and {2} {3} found on that spot. Which one do you want to switch places with.(1/2): ",
+                                    secondSpotSplit[0], secondSpotSplit[1], secondSpotSplit[2], secondSpotSplit[3]);
+                                string s = Console.ReadLine();
+                                if (s == "1")
+                                {
+                                    (spotSplit[2], spotSplit[3], secondSpotSplit[0], secondSpotSplit[1]) = (secondSpotSplit[0], secondSpotSplit[1], spotSplit[2], spotSplit[3]);
+                                    spotStitch[0] = string.Join('#', spotSplit[0], spotSplit[1]);
+                                    spotStitch[1] = string.Join('#', spotSplit[2], spotSplit[3]);
+                                    secondSpotStitch[0] = string.Join('#', secondSpotSplit[0], secondSpotSplit[1]);
+                                    secondSpotStitch[1] = string.Join('#', secondSpotSplit[2], secondSpotSplit[3]);
+                                    parkingGarage[firstSpot - 1] = string.Join('|', spotStitch);
+                                    parkingGarage[secondSpot - 1] = string.Join('|', secondSpotStitch);
+                                    Console.WriteLine("Vehicles switched spots.");
+                                }
+                                else if (s == "2")
+                                {
+                                    (spotSplit[2], spotSplit[3], secondSpotSplit[2], secondSpotSplit[3]) = (secondSpotSplit[2], secondSpotSplit[3], spotSplit[2], spotSplit[3]);
+                                    spotStitch[0] = string.Join('#', spotSplit[0], spotSplit[1]);
+                                    spotStitch[1] = string.Join('#', spotSplit[2], spotSplit[3]);
+                                    secondSpotStitch[0] = string.Join('#', secondSpotSplit[0], secondSpotSplit[1]);
+                                    secondSpotStitch[1] = string.Join('#', secondSpotSplit[2], secondSpotSplit[3]);
+                                    parkingGarage[firstSpot - 1] = string.Join('|', spotStitch);
+                                    parkingGarage[secondSpot - 1] = string.Join('|', secondSpotStitch);
+                                    Console.WriteLine("Vehicles switched spots.");
+                                }
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid input. Try something else.");
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+
             MainMenu();
         }
 
